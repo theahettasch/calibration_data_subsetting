@@ -1,0 +1,8 @@
+#Calibration data including activity data for nodes in the near-minimal FVS
+#NA: TGFR
+Condition
+-
+Response
+AKT:1	CASP3:0	CASP8:0	CASP9:1	ERK:0	JAK:1	MEK:1	P21:0	P53:1	SMAD:1	SMAD7:0	SOCS:0	SPHK1:0	STAT3:0
+Weight:1
+

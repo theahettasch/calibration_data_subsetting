@@ -1,0 +1,7 @@
+#Name	Effect	Target
+NA	inhibits	BCL2
+MK	inhibits	AKT
+TA	inhibits	PI3K
+SB	inhibits	GSK3B
+SC	inhibits	ERK
+TR	inhibits	MEK
