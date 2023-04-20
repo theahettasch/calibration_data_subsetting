@@ -1,7 +1,0 @@
-#Calibration dataset including node activity data based on the near-minimal FVS
-#NA: DNA_damage:NA	WNT:NA	CyclinA:NA	PIP3:NA
-Condition
--
-Response
-Akt:1	AXIN:1	beta_catenin:0	CyclinB:0	E2F1:1	EGF:0	ERK:1	GSK3beta:1	JNK:1	MDM2:0	mTOR1:1	mTOR2:1	p38:1	p53:1	PDK1:1	PI3K:1	PP2A:0	S6K:1	SHP2:1	Smad2_3:0	Smad7:0	Src:0	TGF_beta:1	TSC1_2:0
-Weight:1

@@ -1,8 +1,0 @@
-#Name	Effect	Target
-CR	inhibits	ROS
-NA	inhibits	BCL2
-NU	inhibits	MDM2
-SC	inhibits	ERK
-MK	inhibits	AKT
-TA	inhibits	PI3K
-TR	inhibits	MEK
