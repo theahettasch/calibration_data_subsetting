@@ -1,0 +1,4 @@
+targets, factors
+nodeA, (nodeB | nodeC)
+nodeB, !nodeC
+nodeC, nodeA & node B
