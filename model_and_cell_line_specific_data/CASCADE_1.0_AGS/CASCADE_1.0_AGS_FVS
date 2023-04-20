@@ -1,0 +1,7 @@
+#Calibration dataset including node activity data based on the near-minimal FVS
+#NA: MDM2_g:NA
+Condition
+-
+Response
+CTNNB1:1	BTRC:1	MDM2:1	LRP_f:1	TP53:0	PIK3CA:1	AKT1S1:0	mTORC1_c:0	RHEB:0	KRAS:1	DUSP6:1	GRB2:0	GSK3_f:0	SHC1:1	RAF_f:1	MEK_f:1	RTPK_f:1	ERK_f:1	PDPK1:0	MAPK14:0	S6K_f:1	TSC_f:1	mTORC2_c:0	TCF7_f:1	AKT_f:1
+Weight:1

@@ -1,0 +1,13 @@
+#Name	Effect	Target
+NA	inhibits	Bcl_2
+AF	inhibits	EGFR
+MK	inhibits	Akt
+TA	inhibits	PI3K
+TR	inhibits	MEK
+SA	inhibits	EGFR
+DA	inhibits	BRaf
+LI	inhibits	IGFR
+AZ62	inhibits	CHK1	CHK2
+SB21	inhibits	GSK3beta
+BM	inhibits	IGFR
+SC	inhibits	ERK

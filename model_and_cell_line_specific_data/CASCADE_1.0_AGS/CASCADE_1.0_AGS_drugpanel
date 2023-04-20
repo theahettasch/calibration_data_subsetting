@@ -1,0 +1,8 @@
+#Name	Effect	Target
+PI	inhibits	PIK3CA
+PD	inhibits	MEK_f
+CT	inhibits	GSK3_f
+BI	inhibits	MAPK14
+PK	inhibits	CTNNB1
+AK	inhibits	AKT_f
+5Z	inhibits	MAP3K7
