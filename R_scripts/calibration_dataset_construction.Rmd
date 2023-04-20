@@ -1,0 +1,292 @@
+---
+title: "Calibration dataset construction based on random and guided sampling of baseline activity data"
+output:
+  html_notebook: default
+  pdf_document: default
+---
+
+# Construction of calibration datasets based on random and guided sampling
+
+The script is applied to prepare a collection of calibration datasets based on random and guided sampling from a baseline activity profile.
+
+### Import all necessary libraries
+
+```{r}
+suppressMessages(library(dplyr))
+suppressMessages(library(BoolNet))
+suppressMessages(library(igraph))
+suppressMessages(library(Matrix))
+suppressMessages(library(Matrix))
+suppressMessages(library(ggpubr))
+suppressMessages(library(gtools))
+suppressMessages(library(tibble))
+suppressMessages(library(emba))
+suppressMessages(library(usefun))
+suppressMessages(library(PRROC))
+suppressMessages(library(DT))
+suppressMessages(library(readr))
+suppressMessages(library(ggplot2))
+suppressMessages(library(pheatmap))
+suppressMessages(library(stringr))
+```
+
+### Define relevant variable names
+
+```{r}
+#Define the network name, the number of nodes and the file with calibration data
+model_cl = readline(prompt="Enter model and cell line identifier: ")
+nodes_num = as.integer(readline(prompt="Enter number of nodes in network (excluding output nodes): "))
+pipeline_folder = readline(prompt="Enter the name of the pipeline folder: ")
+baseline_activity_profile = readline(prompt="Enter name of global state profile: ")
+```
+
+A network data frame is created and all node names and activity values, defined in the baseline activity profiles, are imported.
+
+```{r}
+#Import global state profile and store as a dataframe with two columns: Node (node names) and Value (activity values)
+node_info <- read.delim(baseline_activity_profile)
+print(node_info)
+```
+
+### Define sample sizes
+
+Calibration datasets including a range of random and guided samples from the baseline activity profile are created. The number of nodes corresponding to 10%, 20%, ..., 100% of the total number of network nodes is calculated.
+
+```{r}
+calib_size = c()
+percentages = c(10,20,30,40,50,60,70,80,90,100)
+
+for (i in percentages){
+  num = round(nodes_num/100*i,digits = 0)
+  calib_size <- append(calib_size,num)
+}
+
+map = data.frame(percentages,calib_size)
+print(map)
+```
+
+### Calculating Determinative Power
+
+The Determinative Power score for all network nodes is calculated using functions provided by Weidner et al (source). Scores are added to the network dataframe as a new column.
+
+```{r}
+#Files including necessary functions are sourced
+pathtoscripts <- "./DP_calculation/"
+source(paste0(pathtoscripts, "functions.R"))
+source(paste0(pathtoscripts,"pattern_templates.R"))
+
+#The network file is identified. This file includes all logical rules defining the logical measurel
+nets <- mixedsort(dir(pathtoscripts, pattern = paste0(model_cl,'_logical_equations')))
+print(paste(length(nets), "network(s) found, calculating Determinative Power"))
+
+#The DP for each network node is calculated
+DPresults <- calculateAllMeasures(nets, pathtoscripts, measure2calc="DP", saveResults=TRUE, savepath=paste0(pathtoscripts, "Network measures/"))
+
+#Add the DP scores to the calibration data dataframe 
+for (i in (1:nodes_num)){
+  node_name = node_info$Node[i]
+  node_info$DP[i] = DPresults[[1]][node_name]
+}
+#Sort the calibration data set based on DP score
+node_info = node_info[order(node_info$DP, decreasing = TRUE),]
+row.names(node_info) = NULL
+
+print(node_info)
+```
+
+### Calculating degree Z-score
+
+The degree Z-score for all network nodes is calculated using functions provided by Weidner et al (source). Scores are added to the network dataframe as a new column.
+
+```{r}
+
+#Files including necessary functions are sourced
+pathtoscripts <- "./Z_calculation/"
+source(paste0(pathtoscripts, "functions.R"))
+source(paste0(pathtoscripts,"pattern_templates.R"))
+
+#The network file is identified. This file includes all logical rules defining the logical measurel
+nets <- mixedsort(dir(pathtoscripts, pattern = paste0(model_cl,'_logical_equations')))
+print(paste(length(nets), "network(s) found, calculating Z-score"))
+
+#The degree Z-score for each network node is calculated
+Zresults <- calculateAllMeasures(nets, pathtoscripts, measure2calc="Z", saveResults=TRUE, savepath=paste0(pathtoscripts, "Network measures/"))
+
+#Add the Z-scores to the calibration data data frame 
+for (i in (1:nodes_num)){
+  node_name = node_info$Node[i]
+  node_info$Z[i] = Zresults[[1]][node_name]
+}
+#Sort the calibration data set based on Z-score
+node_info = node_info[order(node_info$Z, decreasing = TRUE),]
+row.names(node_info) = NULL
+
+print(node_info)
+```
+
+# Calibration datasets
+
+All random and guided samples of baseline activity data are stored in calibration datasets which can be interpreted by the Gitsbe module in the DrugLogics pipeline.
+
+### *calib_data_random():* Calibration dataset construction based on random sampling
+
+A function is created for random sampling of baseline activity data and construction of calibration datasets. The resampling number is given as an argument to the function.
+
+```{r}
+calib_data_random = function(rep){
+  
+  path_random = paste0('./druglogics-synergy/',pipeline_folder,'/Random_training_datasets/')
+
+  #Make a list of the baseline activity data (on the form "node:value") for sampling
+  baseline_data_list = c()
+  for (i in (1:nrow(node_info))){
+    baseline_data_list = append(baseline_data_list,paste0(node_info$Node[i],':',node_info$Value[i]))
+  }
+
+  for (m in (1:rep)){
+    for (i in (1:10)){
+      random_sample = sample(baseline_data_list, size = map[[2]][i])
+      gene_list <- vector(measure = "character")
+      NA_list <- vector(measure = "character")
+      for (k in random_sample){
+        if (grepl("NA", k)==TRUE){
+          NA_list <- append(NA_list, k)
+        }
+        else
+          gene_list <- append(gene_list, k)
+      }
+    
+      filename <- paste0(path_random,'random_',model_cl,'_',m,'_',map[[1]][i])
+      info <- paste0('#Network: ',model_cl,'\tCalibration data: ',baseline_activity_profile, '\tIncluding ', map[[1]][i], "% of network nodes")
+      cat(info, file = filename, sep = "\n")
+      cat("#NA: ", file = filename, sep = "\t", append = TRUE)
+      cat(NA_list, file = filename, sep = "\t", append = TRUE)
+      cat("\nCondition", file = filename, sep="\n", append = TRUE)
+      cat("-", file = filename, sep = "\n", append = TRUE)
+      cat("Response", file = filename, sep = "\n", append = TRUE)
+      cat(gene_list, file = filename, sep = "\t", append = TRUE)
+      cat("\nWeight: 1", file = filename, sep = "\n", append = TRUE)
+    }
+  }  
+}
+```
+
+### *calib_data_guided():* Calibration datasets construction based on DP or degree Z-score
+
+A function is defined for guided sampling of baseline activity data and calibration dataset construction. The input argument given to the function is either "DP" or "Z" depending on the sampling strategy. All nodes are sorted based on DP or Z-score, followed by sampling and calibration dataset construction.
+
+```{r}
+calib_data = function(measure){
+  #Make folder to store calibation datasets
+  path = paste0('./druglogics-synergy/',pipeline_folder,'/',measure,'_training_datasets/')
+  
+  #Sort the node info based on measure
+  if (measure == "DP"){
+    node_info = node_info[order(node_info$DP, decreasing = TRUE),]
+    row.names(node_info) = NULL
+  }
+  else if (measure = "Z"){
+    node_info = node_info[order(node_info$Z, decreasing = TRUE),]
+    row.names(node_info) = NULL
+  }
+  for (i in 1:10){
+    filename = paste0(path, measure,'_' ,model_cl,'_',map[[1]][i])
+    info = paste('#Network:',model_cl,'\t','Global state profile:',baseline_activity_profile,'\t',map[[2]][i],'/',nodes_num,'nodes based on ', measure)
+    cl = c()
+    for (j in 1:map[[2]][i]){
+      node_value_string = paste0(node_info$Node[j],':',node_info$Value[j])
+      cl = append(cl,node_value_string)
+    }
+    
+    #Checking for 'NA' activity values
+    gene_list <- vector(measure = "character")
+    NA_list <- vector(measure = "character")
+    
+    for (k in cl){
+      if (grepl("NA", k)==TRUE){
+        NA_list <- append(NA_list, k)
+      }
+      else
+        gene_list <- append(gene_list, k)
+    }
+    #Add all the necessary information to the calibration dataset text file
+    cat(info, file = filename, sep = "\n")
+    cat("#NA: ", file = filename, sep = "\t", append = TRUE)
+    cat(NA_list, file = filename, sep = "\t", append = TRUE)
+    cat("\n\nCondition", file = filename, sep="\n", append = TRUE)
+    cat("-", file = filename, sep = "\n", append = TRUE)
+    cat("Response", file = filename, sep = "\n", append = TRUE)
+    cat(gene_list, file = filename, sep = "\t", append = TRUE)
+    cat("\nWeight: 1", file = filename, sep = "\n", append = TRUE)
+  }
+}
+
+```
+
+### Generate calibration datasets
+
+```{r}
+calib_data_random(20)
+calib_data("DP")
+calib_data("Z")
+```
+
+# Bash scripts for automated pipeline simulations
+
+Bash scripts are generated to run multiple DrugLogics simulations sequentially, automatically changing the calibration dataset between each run.
+
+### *bash_script_random():* Make bash scripts to run the pipeline with random sample calibration datasets
+
+The number of resampling replicates is given as argument to the function.
+
+```{r}
+
+bash_script_random = function(rep){
+  bash_filename_random = paste0('./random_',model_cl,'.sh')
+  
+  cat('#! /usr/bin/bash', file = bash_filename_random, sep = '\n', append = TRUE)
+  cat('cd druglogics-synergy', file = bash_filename_random, sep = '\n', append = TRUE)
+  cat('for i in ', file = bash_filename_random, sep = ' ', append = TRUE)
+  cat('10 20 30 40 50 60 70 80 90 100', file = bash_filename_random, sep = ' ', append = TRUE)
+  cat('\n', file = bash_filename_random, append = TRUE)
+  cat('do', file = bash_filename_random, sep = '\n', append = TRUE)
+  cat(paste0('\tfor j in {1..', rep, '}'), file = bash_filename_random, sep = '\n', append = TRUE)
+  cat('\tdo', file = bash_filename_random, sep = '\n', append = TRUE)
+  cat(paste0('\t\tname_training="random_', model_cl, '_${j}_${i}"\n'), file = bash_filename_random, append = TRUE)
+  cat(paste0('\t\tname_project="random_', model_cl,'_${j}_${i}"\n'), file = bash_filename_random, append = TRUE)
+  cat(paste0('\t\tcat ', pipeline_folder, '/Random_training_datasets/${name_training} > ', pipeline_folder, '/training'), file = bash_filename_random, sep = '\n', append = TRUE)
+  cat(paste0('\t\tjava -cp ./target/synergy-1.2.1-jar-with-dependencies.jar eu.druglogics.synergy.Launcher --project=${name_project} --inputDir=', pipeline_folder), file = bash_filename_random, sep = '\n', append = TRUE)
+  cat('\tdone', file = bash_filename_random, sep = '\n', append = TRUE)
+  cat('done', file = bash_filename_random, sep = '\n', append = TRUE)
+}
+```
+
+### *bash_script_guided():* Make bash scripts to run the pipeline with calibration datasets based on DP and Z-score
+
+The measure (DP or Z) is given as argument to the function.
+
+```{r}
+bash_script_guided = function(measure){
+  bash_filename = paste0('./',measure,'_',model_cl,'.sh')
+  
+  cat('#! /usr/bin/bash', file = bash_filename, sep = '\n', append=TRUE)
+  cat('cd druglogics-synergy', file = bash_filename, sep = '\n', append = TRUE)
+  cat('for i in ', file = bash_filename, sep = ' ', append = TRUE)
+  cat(percentages, file = bash_filename, sep = ' ', append = TRUE)
+  cat('\n', file = bash_filename, append = TRUE)
+  cat('do', file = bash_filename, sep = '\n', append = TRUE)
+  cat(paste0('\tname_training="', measure, '_', model_cl, '_${i}"\n'), file = bash_filename, append = TRUE)
+  cat(paste0('\tname_project="', measure, '_', model_cl, '_${i}"\n'), file = bash_filename, append = TRUE)
+  cat(paste0('\tcat ',pipeline_folder, '/', measure, '_training_datasets/${name_training} > ', pipeline_folder, '/training'), file = bash_filename, sep = '\n',append = TRUE)
+  cat(paste0('\tjava -cp ./target/synergy-1.2.1-jar-with-dependencies.jar eu.druglogics.synergy.Launcher --project=${name_project} --inputDir=', pipeline_folder), file = bash_filename, sep = '\n', append = TRUE)
+  cat('done', file = bash_filename, sep = '\n', append = TRUE)
+}
+```
+
+### Make bash scripts for automated pipeline simulation
+
+```{r}
+bash_script_random(20, percentages)
+bash_script_guided("DP")
+bash_script_guided("Z")
+```
