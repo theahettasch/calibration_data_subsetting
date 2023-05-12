@@ -186,7 +186,7 @@ across_simulation_compliance = function(baseline_activity_profile, mode, pipelin
 }
 ```
 
-### *consistent_nodes(): Check for consistent nodes in stable states across simulations*
+### *consistent_nodes():* Check for consistent nodes in stable states across simulations
 
 ```{r}
 #Check if the node activity is consistent across all models in the model ensemble
