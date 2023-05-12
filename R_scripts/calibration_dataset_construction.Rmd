@@ -68,7 +68,8 @@ print(map)
 
 ### Calculating Determinative Power
 
-The Determinative Power score for all network nodes is calculated using functions provided by Weidner et al (source). 
+The Determinative Power score for all network nodes is calculated using functions provided by Weidner et al., 2021 (Capturing dynamic relevance in Boolean networks using graph theoretical measures). Additional functions in functions.R and pattern_templates.R can be downloaded from the supplemetary GitHub repository of Weidner et al.: https://github.com/sysbio-bioinf/BNStatic/tree/master 
+
 Scores are added to the network dataframe as a new column.
 
 ```{r}
