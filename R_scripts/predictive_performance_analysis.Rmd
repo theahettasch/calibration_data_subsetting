@@ -43,7 +43,9 @@ random_model_result = readline(prompt="Enter the name of the result folder for t
 
 ### *calculate_predictions():* Calculating AUC ROC for a selection of synergy simulations
 
-Function is used to calculate the ensemble-wise AUC ROC for a selection of synergy simulations. The model+cell line identifier as well as the mode (random, DP, Z) is given as input argument to the function. The output of the function is a dataframe including all simulation names, sample sizes and AUC ROC values.
+Function is used to calculate the ensemble-wise AUC ROC for a selection of synergy simulations. 
+The model+cell line identifier as well as the mode (random, DP, Z) is given as input argument to the function. 
+The output of the function is a dataframe including all simulation names, sample sizes and AUC ROC values.
 
 ```{r}
 calculate_predictions = function(model_cl, mode){
