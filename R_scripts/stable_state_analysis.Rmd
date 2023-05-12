@@ -54,7 +54,7 @@ single_simulation_data_frame = function(simulation_name, pipeline_folder){
 }
 ```
 
-### *single_simulation_heatmap(): Create stable state of model ensemble*
+### *single_simulation_heatmap():* Create stable state of model ensemble
 
 ```{r}
 single_simulation_heatmap = function(simulation_name, pipeline_folder, baseline_activity_profile, plot_title){
