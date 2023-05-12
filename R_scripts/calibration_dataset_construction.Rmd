@@ -50,7 +50,8 @@ print(node_info)
 
 ### Define sample sizes
 
-Calibration datasets including a range of random and guided samples from the baseline activity profile are created. The number of nodes corresponding to 10%, 20%, ..., 100% of the total number of network nodes is calculated.
+Calibration datasets including a range of random and guided samples from the baseline activity profile are created. 
+The number of nodes corresponding to 10%, 20%, ..., 100% of the total number of network nodes is calculated.
 
 ```{r}
 calib_size = c()
@@ -67,7 +68,8 @@ print(map)
 
 ### Calculating Determinative Power
 
-The Determinative Power score for all network nodes is calculated using functions provided by Weidner et al (source). Scores are added to the network dataframe as a new column.
+The Determinative Power score for all network nodes is calculated using functions provided by Weidner et al (source). 
+Scores are added to the network dataframe as a new column.
 
 ```{r}
 #Files including necessary functions are sourced
@@ -96,7 +98,8 @@ print(node_info)
 
 ### Calculating degree Z-score
 
-The degree Z-score for all network nodes is calculated using functions provided by Weidner et al (source). Scores are added to the network dataframe as a new column.
+The degree Z-score for all network nodes is calculated using functions provided by Weidner et al (source). 
+Scores are added to the network dataframe as a new column.
 
 ```{r}
 
@@ -286,7 +289,7 @@ bash_script_guided = function(measure){
 ### Make bash scripts for automated pipeline simulation
 
 ```{r}
-bash_script_random(20, percentages)
+bash_script_random(20)
 bash_script_guided("DP")
 bash_script_guided("Z")
 ```
